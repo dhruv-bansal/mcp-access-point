@@ -1,0 +1,33 @@
+access_point:
+  listeners:
+    - address: 0.0.0.0:8080
+
+mcps:
+  - id: test
+    upstream_id: 1
+    path: https://petstore.swagger.io/v2/swagger.json
+
+  - id: service-1
+    upstream_id: 1
+    path: http://host.docker.internal:8081/v3/api-docs
+
+# upstreams:
+#   - id: 1
+#     nodes:
+#       default:
+#         url: https://petstore.swagger.io
+#     type: roundrobin
+#     scheme: https
+#     pass_host: preserve
+upstreams:
+  - id: 1 
+    nodes:
+      "127.0.0.1:8091": 1
+    scheme: https
+    pass_host: preserve
+
+  - id: 2
+    nodes:
+      "127.0.0.1:8091": 1
+    scheme: https
+    pass_host: preserve
