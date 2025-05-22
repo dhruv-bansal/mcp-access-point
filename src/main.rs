@@ -29,6 +29,7 @@ use access_point::{
 use access_point::service::mcp::MCPProxyService;
 
 fn main() {
+    println!("ENV: {:?}", std::env::var("CONFIG_PATH"));
     // 加载配置和命令行参数
     std::env::set_var("RUST_LOG", "debug");
     let cli_options = Opt::parse_args();
@@ -64,16 +65,16 @@ fn main() {
         None
     };
 
-    // 创建服务器实例
+    // Create a server instance
     let mut access_point_server = Server::new_with_opt_and_conf(Some(cli_options), config.pingora);
 
-    // 添加日志服务
+    // Add log service
     if let Some(log_service) = logger {
         log::info!("Adding log sync service...");
         access_point_server.add_service(log_service);
     }
 
-    // 添加 Etcd 配置同步服务
+    // Add Etcd configuration synchronization service
     if let Some(etcd_service) = etcd_sync {
         log::info!("Adding etcd config sync service...");
         access_point_server.add_service(etcd_service);
@@ -97,14 +98,14 @@ fn main() {
         "access_point",
     );
 
-    // 添加监听器
+    //Add a listener
     log::info!("Adding listeners...");
     add_listeners(&mut http_service, &config.access_point);
 
     // 添加扩展服务（如 Sentry 和 Prometheus, Admin）
     add_optional_services(&mut access_point_server, &config.access_point);
 
-    // 启动服务器
+    // Start the server
     log::info!("Bootstrapping...");
     access_point_server.bootstrap();
     log::info!("Bootstrapped. Adding Services...");
@@ -114,7 +115,7 @@ fn main() {
     access_point_server.run_forever();
 }
 
-// 添加监听器的辅助函数
+// Add a helper function to listener
 fn add_listeners(
     http_service: &mut Service<HttpProxy<MCPProxyService>>,
     cfg: &config::AccessPointConfig,

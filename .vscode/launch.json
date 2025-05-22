@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Rust App",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/target/debug/access-point",
+      "args": ["-c", "/Users/dhruvbansal/Documents/code/mcp-config/config1/config.yaml"],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+    "servers": {
+        "test": {
+            "type": "sse",
+            "url": "http://localhost:8080/api/service-1/sse"
+        }
+    }
+  
+}
