@@ -31,7 +31,8 @@ use access_point::service::mcp::MCPProxyService;
 fn main() {
     println!("ENV: {:?}", std::env::var("CONFIG_PATH"));
     // 加载配置和命令行参数
-    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_LOG", "info,pingora_core=warn");
+    // std::env::set_var("RUST_LOG", "debug");
     let cli_options = Opt::parse_args();
     let config =
         Config::load_yaml_with_opt_override(&cli_options).expect("Failed to load configuration");
@@ -80,15 +81,6 @@ fn main() {
         access_point_server.add_service(etcd_service);
     }
 
-    // 初始化 HTTP 服务
-
-    // let mcp_config =
-    //         Config::load_yaml_with_opt_override(&cli_options).expect("Failed to load configuration");
-    // if let mcps = config.mcps {
-    //     let _tools =
-    //         reload_global_openapi_tools_from_config(mcps).expect("Failed to reload openapi tools");
-    // }
-    // println!("total tools : {:#?}", tools.tools.len());
 
     let (tx, _) = broadcast::channel(16);
 
@@ -112,6 +104,11 @@ fn main() {
     access_point_server.add_service(http_service);
 
     log::info!("Starting Server...");
+    for list_cfg in config.access_point.listeners.iter() {
+        let addr = &list_cfg.address.to_string();
+        println!("Listening on: {}", addr);
+    }
+    
     access_point_server.run_forever();
 }
 

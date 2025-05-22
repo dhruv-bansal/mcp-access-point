@@ -11,11 +11,16 @@ access_point:
   # listener on TCP or TLS
   listeners:
     - address: 0.0.0.0:8080 # listen on all interfaces
-
 mcps:
   - id: service-1 # Service identifier
     upstream_id: 1 # Upstream service identifier (must be the same as upstream id in upstreams)
-    path: openapi_for_demo_patch1.json # Local OpenAPI file path
+    path: config/openapi_for_demo_patch1.json # Local OpenAPI file path
+    upstream: # Upstream service configuration must be defined
+      headers: # Headers to send to upstream service
+        X-API-Key: "12345-abcdef"        # API key
+        Authorization: "Bearer token123" # Bearer token
+        User-Agent: "MyApp/1.0"          # User agent
+        Accept: "application/json"       # Accept header
 
   - id: service-2
     upstream_id: 2
@@ -74,3 +79,9 @@ upstreams: # Upstream service configuration must be defined
     scheme: https # supports http and https
     pass_host: rewrite # set to rewrite to upstream_host, when nodes are domains
     upstream_host: api.weather.gov # set to override host header
+
+# Global rules apply plugins to all matching requests
+# global_rules:
+#   - id: 1
+#     plugins:
+#       file-logger: {} # log to file
