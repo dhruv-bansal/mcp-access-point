@@ -28,6 +28,8 @@ pub async fn request_processing(
     request: &JSONRPCRequest,
     stream: bool, // TODO: Implement stream handling if needed, currently unused in this cod
 ) -> Result<bool> {
+
+     //DEBUG : printing the request body
     let body = session.downstream_session.read_request_body().await;
     if let Err(e) = &body {
         log::error!("Failed to read request body: {}", e);
@@ -35,6 +37,7 @@ pub async fn request_processing(
     if let Ok(Some(ref body_bytes)) = body {
         log::info!("Custom log - Request body 2: {}", String::from_utf8_lossy(body_bytes));
     }
+    //DEBUG : printing the request body
 
     let request_id = request.id.clone().unwrap_or(RequestId::Integer(0));
     match request.method.as_str() {

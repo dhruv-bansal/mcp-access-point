@@ -225,6 +225,7 @@ impl MCPProxyService {
                 Error::because(ErrorType::ReadError, "Failed to read request body:", e)
             })?;
 
+        //DEBUG : printing the request body
         if let Some(ref body_bytes) = body {
             log::info!("Custom log - Request body 1: {}", String::from_utf8_lossy(body_bytes));
         }
@@ -241,7 +242,7 @@ impl MCPProxyService {
         if let Some(ref body_bytes) = body1 {
             log::info!("Custom log - Request body 1: {}", String::from_utf8_lossy(body_bytes));
         }
-
+        //DEBUG : printing the request body
 
         if body.is_none() {
             log::warn!("Request body is empty");
