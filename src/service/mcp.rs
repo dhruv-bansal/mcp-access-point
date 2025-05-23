@@ -226,7 +226,7 @@ impl MCPProxyService {
             })?;
         
         if let Some(ref body_bytes) = body {
-            log::info!("Custom log - Request body: {}", String::from_utf8_lossy(body_bytes));
+            log::info!("Custom log - Request body 1: {}", String::from_utf8_lossy(body_bytes));
         }
 
         if body.is_none() {

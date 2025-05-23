@@ -28,6 +28,14 @@ pub async fn request_processing(
     request: &JSONRPCRequest,
     stream: bool, // TODO: Implement stream handling if needed, currently unused in this cod
 ) -> Result<bool> {
+    let body = session.downstream_session.read_request_body().await;
+    if let Err(e) = &body {
+        log::error!("Failed to read request body: {}", e);
+    }
+    if let Ok(Some(ref body_bytes)) = body {
+        log::info!("Custom log - Request body 2: {}", String::from_utf8_lossy(body_bytes));
+    }
+
     let request_id = request.id.clone().unwrap_or(RequestId::Integer(0));
     match request.method.as_str() {
         "tools/list" => {
@@ -59,16 +67,19 @@ pub async fn request_processing(
         }
         "tools/call" => {
             log::info!("uri {}", session.req_header().uri.path());
-    
+
             // Log original request headers
-            log::info!("Original request headers: {:?}", session.req_header().headers);
-            
+            log::info!(
+                "Original request headers: {:?}",
+                session.req_header().headers
+            );
+
             // Enable buffering to read the body
             session.enable_retry_buffering();
-            
+
             // Read and log the body
             if let Ok(Some(body)) = session.downstream_session.read_request_body().await {
-                log::info!("Original request body: {}", String::from_utf8_lossy(&body));
+                log::info!("Custom log : Original request body: {}", String::from_utf8_lossy(&body));
             }
 
             let req_params = match request.params.clone() {
@@ -173,7 +184,7 @@ pub async fn request_processing(
                         .set_uri(Uri::from_str(&path_and_query).unwrap());
                     // do not remove_header("Content-Length")
                     session.req_header_mut().remove_header("Content-Type");
-                    
+
                     Ok(false)
                 }
                 None => {
