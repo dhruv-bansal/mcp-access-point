@@ -18,6 +18,8 @@ use crate::{
     utils::request::{merge_path_query, replace_dynamic_params},
 };
 
+// The request comes in through request_processing function
+// TODO: is HTTP request is build before this function?
 pub async fn request_processing(
     ctx: &mut <MCPProxyService as ProxyHttp>::CTX,
     session_id: &str,
@@ -56,7 +58,18 @@ pub async fn request_processing(
             }
         }
         "tools/call" => {
-            log::debug!("uri {}", session.req_header().uri.path());
+            log::info!("uri {}", session.req_header().uri.path());
+    
+            // Log original request headers
+            log::info!("Original request headers: {:?}", session.req_header().headers);
+            
+            // Enable buffering to read the body
+            session.enable_retry_buffering();
+            
+            // Read and log the body
+            if let Ok(Some(body)) = session.downstream_session.read_request_body().await {
+                log::info!("Original request body: {}", String::from_utf8_lossy(&body));
+            }
 
             let req_params = match request.params.clone() {
                 Some(p) => p,
@@ -160,7 +173,7 @@ pub async fn request_processing(
                         .set_uri(Uri::from_str(&path_and_query).unwrap());
                     // do not remove_header("Content-Length")
                     session.req_header_mut().remove_header("Content-Type");
-
+                    
                     Ok(false)
                 }
                 None => {
