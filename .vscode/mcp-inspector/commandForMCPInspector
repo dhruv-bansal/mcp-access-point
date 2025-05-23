@@ -1,0 +1,1 @@
+npx @modelcontextprotocol/inspector --cli --config /Users/fracon/Documents/code/open-source/mcp-access-point-forked/.vscode/mcp-inspector/config1/config.json --server default-server --method chat.completions
