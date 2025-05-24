@@ -216,6 +216,7 @@ impl MCPProxyService {
         // You can only read the body once, so if you read it you have to send a response.
         // enable buffer would cache the request body, so that the request_body_filter will work fine
         session.enable_retry_buffering();
+        // session.downstream_session.enable_retry_buffering();
         let body = session
             .downstream_session
             .read_request_body()
@@ -229,19 +230,18 @@ impl MCPProxyService {
         if let Some(ref body_bytes) = body {
             log::info!("Custom log - Request body 1: {}", String::from_utf8_lossy(body_bytes));
         }
+        // let body1 = session
+        //     .downstream_session
+        //     .read_request_body()
+        //     .await
+        //     .map_err(|e| {
+        //         log::error!("Failed to read request body: {}", e);
+        //         Error::because(ErrorType::ReadError, "Failed to read request body:", e)
+        //     })?;
 
-        let body1 = session
-            .downstream_session
-            .read_request_body()
-            .await
-            .map_err(|e| {
-                log::error!("Failed to read request body: {}", e);
-                Error::because(ErrorType::ReadError, "Failed to read request body:", e)
-            })?;
-
-        if let Some(ref body_bytes) = body1 {
-            log::info!("Custom log - Request body 1: {}", String::from_utf8_lossy(body_bytes));
-        }
+        // if let Some(ref body_bytes) = body1 {
+        //     log::info!("Custom log - Request body 1: {}", String::from_utf8_lossy(body_bytes));
+        // }
         //DEBUG : printing the request body
 
         if body.is_none() {
@@ -249,10 +249,12 @@ impl MCPProxyService {
             return Err(Error::err(ErrorType::ReadError)?);
         }
 
-        serde_json::from_slice::<JSONRPCRequest>(&body.unwrap()).map_err(|e| {
+        let req = serde_json::from_slice::<JSONRPCRequest>(&body.unwrap()).map_err(|e| {
             log::error!("Failed to parse JSON: {}", e);
             Error::because(ErrorType::ReadError, "Failed to read request body:", e)
-        })
+        })?;
+        log::info!("Custome log - Parsed JSONRPCRequest: {:?}", req);
+        Ok(req)
     }
     // Helper function to avoid code duplication
     pub fn handle_json_rpc_response(
@@ -506,6 +508,37 @@ impl ProxyHttp for MCPProxyService {
             }
             upstream_request.insert_header(header.0, header.1.as_str())?;
         }
+
+        //DEBUG : Set a hardcoded valid JSON body for testing
+        if std::env::var("HARDCODE_BODY_REQUEST").unwrap_or_default() == "1" {
+            let test_body = r#"
+                {
+                "username": "test6",
+                "firstName": "test2",
+                "lastName": "test2",
+                "email": "test2@email.com",
+                "password": "12345",
+                "phone": "12345",
+                "userStatus": 1
+                }
+                "#;
+            ctx.vars.insert("upstream_body".to_string(), test_body.to_string());
+            upstream_request.insert_header("Content-Type", "application/json").ok();
+            upstream_request.insert_header("Content-Length", test_body.len().to_string()).ok();
+
+            // Store the body in context for later use
+            ctx.vars.insert("upstream_body".to_string(), test_body.to_string());
+        
+            if let Some(body) = ctx.vars.get("upstream_body") {
+            log::info!(
+                "Complete upstream request:\nHeaders: {:#?}\nBody: {}",
+                upstream_request.headers,
+                body
+            );
+            }
+        }
+        //DEBUG : Set a hardcoded valid JSON body for testing
+
         log::info!("upstream request headers: {:?}", upstream_request.headers);
         Ok(())
     }
