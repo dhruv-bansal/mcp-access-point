@@ -97,6 +97,7 @@ pub async fn handle_message_endpoint(
     mcp_proxy: &MCPProxyService,
     session: &mut Session,
 ) -> Result<bool> {
+    log::debug!("Handles SSE endpoint requests)");
     match mcp_proxy.parse_json_rpc_request(session).await {
         Ok(request) => {
             let parsed = utils::request::query_to_map(&session.req_header().uri);
