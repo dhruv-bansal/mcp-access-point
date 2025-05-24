@@ -200,7 +200,7 @@ impl ProxyMCPService {
         for pair in tools_meta_info.into_iter() {
             MCP_ROUTE_META_INFO_MAP.insert(pair.0, pair.1);
         }
-        // log::info!("tools_meta_info: {:#?}", MCP_ROUTE_META_INFO_MAP);
+       
         //  insert tools to global map
         // list tools from global map by service id
         MCP_SERVICE_TOOLS_MAP.insert(
@@ -211,6 +211,23 @@ impl ProxyMCPService {
             }
             .into(),
         );
+
+        //DEBUG : Log the contents of MCP_ROUTE_META_INFO_MAP after all inserts
+        log::debug!("Custom logs - MCP_ROUTE_META_INFO_MAP contents:");
+        for entry in MCP_ROUTE_META_INFO_MAP.iter() {
+            let value = entry.value();
+            let type_str = match &value.meta {
+                config::MCPMetaInfo::ToolInfo(tool) => tool.input_schema.type_.as_str(),
+                _ => "<not a ToolInfo>",
+            };
+            log::debug!(
+                "  key: {:?}, type_: {:?}, value: {:#?}",
+                entry.key(),
+                type_str,
+                value
+            );
+        }
+        //DEBUG : Log the contents of MCP_ROUTE_META_INFO_MAP after all inserts
 
         // 配置 upstream
         if let Some(ref upstream_config) = service.upstream {
