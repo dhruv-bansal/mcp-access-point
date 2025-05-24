@@ -1,0 +1,27 @@
+curl -X 'POST' \
+  'http://127.0.0.1:8081/user' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "username": "test6",
+  "firstName": "test2",
+  "lastName": "test2",
+  "email": "test2@email.com",
+  "password": "12345",
+  "phone": "12345",
+  "userStatus": 1
+}'
+
+
+[2025-05-23T17:56:07Z ERROR pingora_proxy] Fail to proxy: Downstream ReadTimedout context: timeout: 60s
+[2025-05-23T17:56:07Z ERROR pingora_proxy] Fail to proxy: Downstream ReadTimedout context: timeout: 60s
+[2025-05-23T17:56:07Z ERROR pingora_proxy] Fail to proxy: Downstream ReadTimedout context: timeout: 60s
+
+
+create username by test3 and assum other values
+
+
+getusername call
+{"method":"tools/call","params":{"name":"getUserByName","arguments":{"username":"test1"}},"jsonrpc":"2.0","id":4}
+
+createusername call
+{"method":"tools/call","params":{"name":"createUser","arguments":{"username":"test3","firstName":"Test","lastName":"User","email":"test3@email.com","password":"test123","phone":1234567890,"userStatus":1,"id":3}},"jsonrpc":"2.0","id":5}
