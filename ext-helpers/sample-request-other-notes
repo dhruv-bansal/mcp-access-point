@@ -25,3 +25,28 @@ getusername call
 
 createusername call
 {"method":"tools/call","params":{"name":"createUser","arguments":{"username":"test3","firstName":"Test","lastName":"User","email":"test3@email.com","password":"test123","phone":1234567890,"userStatus":1,"id":3}},"jsonrpc":"2.0","id":5}
+
+MCPInfo
+key: "getUserByName", type_: "object", value: MCPRouteMetaInfo {
+        operation_id: "getUserByName",
+        meta: ToolInfo(
+            Tool {
+                annotations: None,
+                description: None,
+                input_schema: ToolInputSchema {
+                    properties: {},
+                    required: [],
+                    type_: "object",
+                },
+                name: "",
+            },
+        ),
+        uri: "/user/{username}",
+        method: "GET",
+        upstream_id: Some(
+            "1",
+        ),
+        headers: Some(
+            {},
+        ),
+    }
