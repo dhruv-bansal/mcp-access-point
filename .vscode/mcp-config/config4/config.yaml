@@ -1,0 +1,24 @@
+access_point:
+  # listener on TCP or TLS
+  listeners:
+    - address: 0.0.0.0:8080 # listen on all interfaces
+
+mcps:
+  - id: service-1 # Unique identifier, accessible via /api/service-1/sse or /api/service-1/mcp
+    upstream_id: 1
+    path: /Users/fracon/Documents/code/open-source/mcp-access-point-forked/config/openapi_for_demo.json # Local OpenAPI spec path
+
+# upstreams:
+#   - id: 1
+#     nodes:
+#       - url: http://localhost:8081
+
+upstreams: # Required upstream configuration
+  - id: 1
+    headers: # Headers to send to upstream service
+      accept: "application/json"        # API key
+      Content-Type: "application/json" # Bearer token
+      api_key: "special-key"  # <-- Use this value
+    nodes: # Backend nodes (IP or domain)
+      "localhost:4010": 1 # Format: address:weight
+  
