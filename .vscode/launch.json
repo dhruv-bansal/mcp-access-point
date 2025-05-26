@@ -8,13 +8,18 @@
       "program": "${workspaceFolder}/target/debug/access-point",
       "args": [
         "-c",
-        "/Users/fracon/Documents/code/open-source/mcp-access-point-forked/.vscode/mcp-config/config3/config.yaml"
+        "/Users/fracon/Documents/code/open-source/mcp-access-point-forked/.vscode/mcp-config/config4/config.yaml"
       ],
       "cwd": "${workspaceFolder}",
       "stopOnEntry": false,
       "env": {
         "RUST_LOG": "debug",
-        "pingora_core": "debug"
+        "pingora_core": "debug",
+        "pingora_proxy": "debug",
+        "pingora_access_point": "debug",
+        "PINGORA_LOG_FORMAT": "{date} {target} {file}:{line} {level} {args}",
+         "ACCESS_POINT_LOG_FORMAT": "full",
+        // "RUST_LOG_FORMAT" : "{date} {target} {file}:{line} {level} {args}"
       }
     }
   ]
