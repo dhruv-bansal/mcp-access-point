@@ -1,5 +1,7 @@
 {
     "rust-analyzer.cargo.loadOutDirsFromCheck": true,
     "rust-analyzer.procMacro.enable": true,
-    "rust-analyzer.inlayHints.enable": true
+    "rust-analyzer.inlayHints.enable": true,
+    "rust-analyzer.cargo.runBuildScripts": true,
+    "rust-analyzer.enableCodelens": true
   }
