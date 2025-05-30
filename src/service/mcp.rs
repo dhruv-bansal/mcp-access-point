@@ -248,7 +248,7 @@ impl MCPProxyService {
                 Error::because(ErrorType::ReadError, "Failed to serialize arguments.body to JSON", e)
             })?;
 
-            log::info!("Custom log - New request body 1: {}", String::from_utf8_lossy(&new_body));
+            log::info!("Custom log - New request body 1: {} and length : {}", String::from_utf8_lossy(&new_body), new_body.len());
 
             // Store in ctx for later use
             ctx.vars.insert("new_body".to_string(), String::from_utf8_lossy(&new_body).to_string());
