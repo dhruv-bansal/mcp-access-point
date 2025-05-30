@@ -229,34 +229,15 @@ impl MCPProxyService {
             })?;
 
         //DEBUG : printing the request body
-        if let Some(ref body_bytes) = body {
-            log::info!("Custom log - Request body 1: {}", String::from_utf8_lossy(body_bytes));
-
-            //{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"_meta":{"progressToken":1},"name":"addPet","arguments":{"body":{"id":1,"name":"test1","tag":"test2"}}}}
+        //{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"_meta":{"progressToken":1},"name":"addPet","arguments":{"body":{"id":1,"name":"test1","tag":"test2"}}}}
+        //{"method":"tools/call","params":{"name":"createUser","arguments":{"username":"test","firstName":"Test","lastName":"User","email":"testuser@example.com","password":"changeme123","phone":"0000000000","userStatus":1}},"jsonrpc":"2.0","id":8}
             
-            let body_bytes = body.as_deref().ok_or_else(|| Error::because(ErrorType::ReadError, "Request body is None", ""))?;
-            let json: serde_json::Value = serde_json::from_slice(body_bytes).map_err(|e| {
-                Error::because(ErrorType::ReadError, "Failed to parse JSON body", e)
-            })?;
 
-            // Extract the arguments/body you want to use later
-            // Extract the "body" field inside "arguments"
-            // Extract the "body" field inside "arguments"
-            // Extract the "body" field inside "arguments"
-            let arguments_body: Value = json["params"]["arguments"].clone();
-            let new_body = serde_json::to_vec(&arguments_body).map_err(|e| {
-                Error::because(ErrorType::ReadError, "Failed to serialize arguments.body to JSON", e)
-            })?;
-
-            log::info!("Custom log - New request body 1: {} and length : {}", String::from_utf8_lossy(&new_body), new_body.len());
-
-            // Store in ctx for later use
-            ctx.vars.insert("new_body".to_string(), String::from_utf8_lossy(&new_body).to_string());
-            ctx.vars.insert("new_body_len".to_string(), new_body.len().to_string());
+        if let Some(ref body_bytes) = body {
+            process_upstream_request_body(ctx, &body, body_bytes, session)?;
         }
 
         
-
 
         // let body1 = session
         //     .downstream_session
@@ -330,6 +311,42 @@ impl MCPProxyService {
             Err(e) => log::error!("Failed to create JSON-RPC response: {}", e),
         }
     }
+}
+
+fn process_upstream_request_body(ctx: &mut ProxyContext, body: &Option<Bytes>, body_bytes: &Bytes, session: &mut Session) -> Result<(), Box<Error>> {
+    // Check if the HTTP method supports a body
+    
+    let methods_with_body = ["POST", "PUT", "PATCH", "DELETE", "OPTIONS"];
+    if !methods_with_body.contains(&session.req_header().method .as_str()) {
+        log::info!("HTTP method {} does not support a body. Skipping processing.", session.req_header().method);
+        return Ok(());
+    }
+
+    log::info!("Custom log - Request body 1: {}", String::from_utf8_lossy(body_bytes));
+    let body_bytes = body.as_deref().ok_or_else(|| Error::because(ErrorType::ReadError, "Request body is None", ""))?;
+    let json: serde_json::Value = serde_json::from_slice(body_bytes).map_err(|e| {
+        Error::because(ErrorType::ReadError, "Failed to parse JSON body", e)
+    })?;
+    let arguments_body: Option<Value> = json["params"].get("arguments").and_then(|arguments| {
+        if arguments.is_object() {
+            arguments.get("body").cloned().or_else(|| Some(arguments.clone()))
+        } else {
+            None
+        }
+    });
+    Ok(if let Some(arguments_body) = arguments_body {
+        let new_body = serde_json::to_vec(&arguments_body).map_err(|e| {
+            Error::because(ErrorType::ReadError, "Failed to serialize arguments.body to JSON", e)
+        })?;
+
+        log::info!("Custom log - New request body 1: {} and length : {}", String::from_utf8_lossy(&new_body), new_body.len());
+
+        // Store in ctx for later use
+        ctx.vars.insert("new_body".to_string(), String::from_utf8_lossy(&new_body).to_string());
+        ctx.vars.insert("new_body_len".to_string(), new_body.len().to_string());
+    } else {
+        // Do nothing if arguments_body is None
+    })
 }
 
 /// Implementation of ProxyHttp trait for MCPProxyService.
