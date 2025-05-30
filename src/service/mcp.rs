@@ -509,35 +509,35 @@ impl ProxyHttp for MCPProxyService {
             upstream_request.insert_header(header.0, header.1.as_str())?;
         }
 
-        //DEBUG : Set a hardcoded valid JSON body for testing
-        if std::env::var("HARDCODE_BODY_REQUEST").unwrap_or_default() == "1" {
-            let test_body = r#"
-                {
-                "username": "test6",
-                "firstName": "test2",
-                "lastName": "test2",
-                "email": "test2@email.com",
-                "password": "12345",
-                "phone": "12345",
-                "userStatus": 1
-                }
-                "#;
-            ctx.vars.insert("upstream_body".to_string(), test_body.to_string());
-            upstream_request.insert_header("Content-Type", "application/json").ok();
-            upstream_request.insert_header("Content-Length", test_body.len().to_string()).ok();
+        // //DEBUG : Set a hardcoded valid JSON body for testing
+        // if std::env::var("HARDCODE_BODY_REQUEST").unwrap_or_default() == "1" {
+        //     let test_body = r#"
+        //         {
+        //         "username": "test6",
+        //         "firstName": "test2",
+        //         "lastName": "test2",
+        //         "email": "test2@email.com",
+        //         "password": "12345",
+        //         "phone": "12345",
+        //         "userStatus": 1
+        //         }
+        //         "#;
+        //     ctx.vars.insert("upstream_body".to_string(), test_body.to_string());
+        //     upstream_request.insert_header("Content-Type", "application/json").ok();
+        //     upstream_request.insert_header("Content-Length", test_body.len().to_string()).ok();
 
-            // Store the body in context for later use
-            ctx.vars.insert("upstream_body".to_string(), test_body.to_string());
+        //     // Store the body in context for later use
+        //     ctx.vars.insert("upstream_body".to_string(), test_body.to_string());
         
-            if let Some(body) = ctx.vars.get("upstream_body") {
-            log::info!(
-                "Complete upstream request:\nHeaders: {:#?}\nBody: {}",
-                upstream_request.headers,
-                body
-            );
-            }
-        }
-        //DEBUG : Set a hardcoded valid JSON body for testing
+        //     if let Some(body) = ctx.vars.get("upstream_body") {
+        //     log::info!(
+        //         "Complete upstream request:\nHeaders: {:#?}\nBody: {}",
+        //         upstream_request.headers,
+        //         body
+        //     );
+        //     }
+        // }
+        // //DEBUG : Set a hardcoded valid JSON body for testing
 
         log::info!("upstream request headers: {:?}", upstream_request.headers);
         Ok(())
