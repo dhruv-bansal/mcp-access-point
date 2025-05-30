@@ -37,6 +37,8 @@ use crate::{
     },
 };
 
+use serde_json::Value;
+
 /// Proxy service.
 ///
 /// Manages the proxying of requests to upstream servers.
@@ -211,7 +213,7 @@ impl MCPProxyService {
         Ok(true)
     }
     /// Parses JSON-RPC request from session body
-    pub async fn parse_json_rpc_request(&self, session: &mut Session) -> Result<JSONRPCRequest> {
+    pub async fn parse_json_rpc_request(&self, ctx: &mut <MCPProxyService as ProxyHttp>::CTX, session: &mut Session) -> Result<JSONRPCRequest> {
         // Read request body
         // You can only read the body once, so if you read it you have to send a response.
         // enable buffer would cache the request body, so that the request_body_filter will work fine
@@ -229,7 +231,33 @@ impl MCPProxyService {
         //DEBUG : printing the request body
         if let Some(ref body_bytes) = body {
             log::info!("Custom log - Request body 1: {}", String::from_utf8_lossy(body_bytes));
+
+            //{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"_meta":{"progressToken":1},"name":"addPet","arguments":{"body":{"id":1,"name":"test1","tag":"test2"}}}}
+            
+            let body_bytes = body.as_deref().ok_or_else(|| Error::because(ErrorType::ReadError, "Request body is None", ""))?;
+            let json: serde_json::Value = serde_json::from_slice(body_bytes).map_err(|e| {
+                Error::because(ErrorType::ReadError, "Failed to parse JSON body", e)
+            })?;
+
+            // Extract the arguments/body you want to use later
+            // Extract the "body" field inside "arguments"
+            // Extract the "body" field inside "arguments"
+            // Extract the "body" field inside "arguments"
+            let arguments_body: Value = json["params"]["arguments"].clone();
+            let new_body = serde_json::to_vec(&arguments_body).map_err(|e| {
+                Error::because(ErrorType::ReadError, "Failed to serialize arguments.body to JSON", e)
+            })?;
+
+            log::info!("Custom log - New request body 1: {}", String::from_utf8_lossy(&new_body));
+
+            // Store in ctx for later use
+            ctx.vars.insert("new_body".to_string(), String::from_utf8_lossy(&new_body).to_string());
+            ctx.vars.insert("new_body_len".to_string(), new_body.len().to_string());
         }
+
+        
+
+
         // let body1 = session
         //     .downstream_session
         //     .read_request_body()
@@ -256,6 +284,8 @@ impl MCPProxyService {
         log::info!("Custome log - Parsed JSONRPCRequest: {:?}", req);
         Ok(req)
     }
+
+    
     // Helper function to avoid code duplication
     pub fn handle_json_rpc_response(
         &self,
@@ -389,6 +419,31 @@ impl ProxyHttp for MCPProxyService {
         // log::debug!("===== Request: {:?}", session.req_header());
         // Handle the request based on the path
 
+
+        // session.downstream_session.enable_retry_buffering();
+        // let body_bytes = session
+        //     .downstream_session
+        //     .read_request_body()
+        //     .await
+        //     .map_err(|e| {
+        //         log::error!("Failed to read request body: {}", e);
+        //         Error::because(ErrorType::ReadError, "Failed to read request body:", e)
+        //     })?;
+     
+        // if let Some(body) = body_bytes {
+        //     // Preserve body for upstream
+        //     if let Ok(json) = serde_json::from_slice::<Value>(&body) {
+        //         // Navigate to arguments: params -> arguments
+        //         let maybe_args = json
+        //             .get("params")
+        //             .and_then(|p| p.get("arguments"))
+        //             .cloned(); // clone to store
+
+               
+        //         println!("🔍 Extracted arguments: {:?}", maybe_args);
+        //     }
+        // }
+
         match match_api_path(path) {
             PathMatch::Sse(tenant_id) => {
                 log::debug!("SSE path: {:?}", path);
@@ -472,6 +527,24 @@ impl ProxyHttp for MCPProxyService {
         peer
     }
 
+    async fn request_body_filter(
+        &self,
+        session: &mut Session,
+        body: &mut Option<Bytes>,
+        end_of_stream: bool,
+        ctx: &mut Self::CTX,
+    ) -> Result<()> {
+
+        // Replace the body with the new body from ctx.vars["new_body"] if present
+        if let Some(new_body) = ctx.vars.get("new_body") {
+            let bytes = Bytes::from(new_body.clone());
+            let len = bytes.len();
+            *body = Some(bytes);
+        }
+           
+        Ok(())
+    }
+
     /// Modify the request before it is sent to the upstream
     ///
     /// This method is called before the request is sent to the upstream.
@@ -508,6 +581,14 @@ impl ProxyHttp for MCPProxyService {
             }
             upstream_request.insert_header(header.0, header.1.as_str())?;
         }
+
+        
+        // Set Content-Length header based on ctx.vars["new_body_len"] if present
+        if let Some(len) = ctx.vars.get("new_body_len") {
+            upstream_request.insert_header("Content-Length", len)?;
+        }
+        
+        
 
         // //DEBUG : Set a hardcoded valid JSON body for testing
         // if std::env::var("HARDCODE_BODY_REQUEST").unwrap_or_default() == "1" {

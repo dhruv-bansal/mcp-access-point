@@ -53,7 +53,7 @@ pub async fn handle_streamable_http_endpoint(
                 log::debug!("Reuse existing transport");
                 Ok(false)
             } else {
-                match mcp_proxy.parse_json_rpc_request(session).await {
+                match mcp_proxy.parse_json_rpc_request(ctx, session).await {
                     Ok(request) => {
                         // add vars to ctx
                         if request.id.is_some() {
@@ -98,7 +98,7 @@ pub async fn handle_message_endpoint(
     session: &mut Session,
 ) -> Result<bool> {
     log::debug!("Handles SSE endpoint requests)");
-    match mcp_proxy.parse_json_rpc_request(session).await {
+    match mcp_proxy.parse_json_rpc_request(ctx, session).await {
         Ok(request) => {
             let parsed = utils::request::query_to_map(&session.req_header().uri);
             let session_id = parsed.get("session_id").unwrap();
