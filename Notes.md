@@ -167,3 +167,9 @@
   }
 }
 ```
+
+
+Notes latest
+
+Complete RPC json body is beign passed
+< Body: {"method":"tools/call","params":{"name":"updatePet","arguments":{"body":{"id":1,"name":"UpdatedPetName","category":{"id":1,"name":"Dogs"},"photoUrls":["http://example.com/photo1.jpg"],"tags":[{"id":1,"name":"tag1"}],"status":"available"},"petId":1}},"jsonrpc":"2.0","id":6}
