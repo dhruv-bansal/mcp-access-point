@@ -1,0 +1,30 @@
+meta {
+  name: service-1-mcp -Pet-PUT
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/service-1/mcp
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "updatePet",
+      "arguments": {
+        "petId": 1,
+        "body": {
+          "id": 1,
+          "name": "Fluffy",
+          "tag": "dog"
+        }
+      }
+    }
+  }
+}

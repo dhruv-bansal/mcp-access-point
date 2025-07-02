@@ -1,0 +1,25 @@
+meta {
+  name: service-1-mcp -Pet-GET
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/api/service-1/mcp
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "getPetById",
+      "arguments": {
+        "petId": 1
+      }
+    }
+  }
+}
